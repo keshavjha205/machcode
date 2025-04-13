@@ -35,7 +35,17 @@ function Memorygame() {
   }, [gridSize])
 
   const checkMatch = (secondId) => {
-    
+    const [firstId] = flipped;
+    if(cards[firstId].number === cards[secondId].number) {
+      setSolved([...solved, firstId, secondId]);
+      setFlipped([]);
+      setDisabled(false);
+    }else {
+      setTimeout(() => {
+        setFlipped([]);
+        setDisabled(false);
+      }, 1000);
+    }
   }
 
   const handleClick = (id) => {
@@ -50,6 +60,7 @@ function Memorygame() {
       setDisabled(true);
       if(id !== flipped[0]){
         setFlipped([...flipped, id])
+        checkMatch(id)
       } else{
         setFlipped([]);
         setDisabled(false);
@@ -57,7 +68,14 @@ function Memorygame() {
     }
   }
 
-  const isFlipped = (id) => flipped.includes(id);
+  const isFlipped = (id) => flipped.includes(id) || solved.includes(id);
+  const isSolved = (id) => solved.includes(id);
+
+  useEffect(()=>{
+    if (solved.length === cards.length && cards.length >0) {
+      setWon(true);
+    }
+  }, [solved, cards])
 
 
   return (
@@ -85,16 +103,24 @@ function Memorygame() {
           return (
             <div key={card.id} 
             onClick={()=> handleClick(card.id)}
-            className={`aspect-square flex items-center justify-center text-xl font-bold rounded-lg cursor-pointer transition-all duration-300 ${isFlipped(card.id) ? " bg-blue-700 text-white" :  "bg-gray-300 text-gray-400"}`}>
+            className={`aspect-square flex items-center justify-center text-xl font-bold rounded-lg cursor-pointer transition-all duration-300 
+            ${isFlipped(card.id) ? isSolved(card.id) ? " bg-green-700 text-white" :
+            " bg-blue-700 text-white" :  "bg-gray-300 text-gray-400"}`}>
               {isFlipped(card.id) ? card.number : "?"}
             </div>
           )
         })}
       </div>
+
       {/* Result */}
 
+      {won && (<div className='mt-4 text-4xl font-bold text-green-500 animate-bounce'>You Won!</div>)
+}
       {/* Reset/play again */}
 
+          <button onClick={initialGame}
+          className='mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600'
+          >{won ? "Play Again" : "Reset"}</button>
     </div>
   )
 }
